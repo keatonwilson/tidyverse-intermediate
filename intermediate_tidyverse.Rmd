@@ -17,7 +17,8 @@ stops in Minneapolis in 2017) to work through a bunch of the Tidyverse's more
 advanced functions. The workshop is catered to users who have some familiarity 
 with the Tidyverse's main principles (tidy data, the pipe, ggplot2) but want to 
 take their knowledge a step further to do more complex data manipulation, 
-summaries and graphing.  
+summaries and graphing. It's basically an overview of tools that I end up 
+using frequently.  
 
 In this workshop we'll cover:  
 1. Data overview  
@@ -28,4 +29,73 @@ In this workshop we'll cover:
 6. Joins  
 7. Pushing into ggplot  
 
+Generally, the format will be for me to live code and for all of you to follow 
+along and work on your individual scripts, but there will be a few times during
+the workshop that I'll pose a challenge. This is the time for you and your 
+table to get together and try and solve a problem.  
+
+# Data read-in and exploration  
+
+The first step is to snag the data we're going to use for this workshop. It's an 
+interesting real-life dataset: a large data set of stop-records for the 
+Minneapolis police department in 2017. Let's get it. 
+
+```{r, message=FALSE}
+#Reading in from my github repo
+library(tidyverse)
+
+police_data = read_csv("https://raw.githubusercontent.com/keatonwilson/tidyverse-intermediate/master/data/MplsStops.csv")
+
+#Get some parsing failures, but we can scope that out in a sec
+
+#Using glimpse (a superior version of str())
+glimpse(police_data)
+
+#Overall this looks good - we can see we've got ~51k observations with 15 variables
+#Let's scope out what's going on with those parsing failures.... 
+problems(police_data)
+
+#Looks like the culprit is the citation issued column - let's just reimport with 
+#an increased guess amount to include this
+address = "https://raw.githubusercontent.com/keatonwilson/tidyverse-intermediate/master/data/MplsStops.csv"
+police_data = read_csv(address, guess_max = 29000)
+
+glimpse(police_data)
+
+#Let's check out that column
+unique(police_data$citationIssued)
+```
+
+## Filtering (and selecting) Data  
+
+Ok, so now that we have our data and have given it a cursory glance, I'm sure 
+you can think of a million questions to ask about it, some of which we will get
+to in a bit. But first, let's go over one of the fundamental tools of tidyverse: 
+filtering your data via the `select()` and `filter()` functions.  
+
+`select()` allows you to pull out certain columns of data, while `filter()` allows 
+you select only certain rows (usually based on some set of conditions). Let's 
+start with `select()`.  
+
+The first thing we might want to do is clean up our dataframe - it's probably not 
+absolutely necessary to have the X1 column (which is just an ID number and is 
+replicated by the idNum column), also... MDC is not a useful addition.  
+
+```{r, eval=FALSE}
+#I usually start non-destructively - note lack of quotations and negative signs
+police_data %>%
+  select(-MDC, -X1)
+
+#We can also use select to change the order and rename
+police_data %>%
+  select(citation_issued = citationIssued, lat, lon = long, date)
+
+#And we also have helper functions if you a boatload of columns
+police_data %>%
+  select(contains("Search"), lat:neighborhood)
+```
+
+You can already see the power over base R - I'm not even sure how I would go 
+about coding that same functionality with bracket or dollar-sign indexing... this 
+is easy, fast and powerful.  
 
