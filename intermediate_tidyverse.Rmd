@@ -1,0 +1,31 @@
+---
+title: "Intermediate Tidyverse"
+author: "Keaton Wilson"
+date: "8/7/2019"
+output: 
+  html_document: 
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction  
+The goal of this workshop is to use a real-world data set (police 
+stops in Minneapolis in 2017) to work through a bunch of the Tidyverse's more 
+advanced functions. The workshop is catered to users who have some familiarity 
+with the Tidyverse's main principles (tidy data, the pipe, ggplot2) but want to 
+take their knowledge a step further to do more complex data manipulation, 
+summaries and graphing.  
+
+In this workshop we'll cover:  
+1. Data overview  
+2. Filtering data  
+3. Mutations (not the biological kind)  
+4. Group operations  
+5. Summaries  
+6. Joins  
+7. Pushing into ggplot  
+
+
