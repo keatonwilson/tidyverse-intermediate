@@ -99,3 +99,147 @@ You can already see the power over base R - I'm not even sure how I would go
 about coding that same functionality with bracket or dollar-sign indexing... this 
 is easy, fast and powerful.  
 
+Let's do some filtering.  
+
+Often, you may want to subsections of a dataframe for graphing, analysis or 
+summarization. For instance, it might be useful to only have a subset of the 
+data where be useful to have a portion of the data where citations were issued. This
+is easy using the `filter()` function.  
+
+```{r}
+police_data %>%
+  filter(citationIssued == "YES")
+
+```
+
+You can also combine filters using **&** or **|**.  
+
+```{r}
+police_data %>% 
+  filter(citationIssued == "YES" & personSearch == "YES")
+```
+We can also do more complicated time-based filters with `dplyr` and `lubridate`.  
+For instance, maybe we just want to filter our data to look at records where citations were issued 
+in Novemebr of 2017.   
+
+```{r, message=FALSE, warning=FALSE}
+#loading lubridate
+library(lubridate)
+police_data %>%
+  filter(citationIssued == "YES" & lubridate::month(date) == 11)
+```
+You can also filter by group_by (which we'll get to in a sec). Some useful functions include:  
+1. ==, >, >=  
+2. is.na()  
+3. !  
+4. between(), near()  
+
+### Challenge  
+
+Using the police data above work with your group/partner to create a subset of the larger data 
+set of traffic violation stops on black men between 1 and 4 am where a citation was issued. 
+Include the date, problem, citationIssued, race, gender, lat and long columns.  
+
+The time problem is tricky if you're not familiar with lubridate (and even if you are) - check out the cheat sheet and google!
+
+```{r}
+police_data %>%
+  select(date, problem, citationIssued, race, gender, lat, long) %>%
+  filter(race == "Black" & gender == "Male" & citationIssued == "YES" & problem == "traffic") %>%
+  filter(between(hour(date), 1, 4))
+```
+
+## Mutations  
+
+Mutations are really just mildly-confusing term to describe creating columsn from row-by-row calcuations (either making new columns or replacing old columns with new ones). This is maybe my most-used function from the tidyverse - lots of utility!  
+
+I'd say it's generally more applicable with continuous data, of which this data set is lacking, but there is still utility here. Let's say you wanted to add a column that indicates whether or not the cop for a given record was successful at determining the race of the person being stopped. We can add a new column to the data easily!  
+
+```{r}
+police_data %>%
+  select(date, problem, preRace, race, gender, lat, long) %>% #slimming down the data a bit first so we can see things more clearly
+  mutate(race_correct = ifelse(preRace == race, TRUE, FALSE))
+```
+
+And here's another more complicated example that adds an evening, morning or night designator.  
+
+```{r}
+police_data %>%
+  select(date, problem, preRace, race, gender, lat, long, policePrecinct) %>% 
+  mutate(time_of_day = ifelse(between(hour(date), 5, 12), "Morning", 
+                              ifelse(between(hour(date), 13, 19), "Afternoon", "Night")))
+```
+
+Lots of options for continuous data, think about the functions:  
+1. +, -, log()
+2. lead(), lag()
+3. percent_rank(), ntile()
+4. cummean() 
+5. na_if()
+
+## Challenge  
+
+Replace the race column in the dataset with a column of the same name except that the value "Unknown" is replaced with NA. 
+
+```{r}
+police_data %>%
+  mutate(race = na_if(race, "Unknown"))
+```
+## Group Operatinons and Summaries  
+
+One of the most powerful features of dplyr is the ability to do stuff on groups or chunks of your data. Sometimes you'll want to leave the dataset intact, and other times you'll want to summarize the data after you do these groupings. Let's look at some examples of both.  
+
+First, let's look at some relatively complicated manipulations that leave all the data in place... we're going to calculate the average hour at which stops happen for each month, and then filter the data frame for only incidents that happen after that average. 
+
+```{r}
+police_data %>%
+  group_by(month(date)) %>%
+  mutate(mean_hour = mean(hour(date))) %>%
+  filter(hour(date) > mean_hour) %>%
+  tail()
+```
+
+
+Now let's look at a summary - this is where stuff get's really useful. Let's say that you wanted to compare the total number of incidents among white and black men and women.  
+
+```{r}
+police_data %>%
+  filter(race == "Black" | race == "White") %>%
+  group_by(race, gender) %>%
+  summarize(n = n())
+
+#We could also do the same thing to include precinct to see if there are biases by gender or race by precinct
+police_data %>%
+  filter(race == "Black" | race == "White") %>%
+  group_by(race, gender, policePrecinct) %>%
+  summarize(n = n())
+
+#A lot of data, probably better to visualize... we'll get to this later, but all of this can be piped directly into ggplot. 
+police_data %>%
+  filter(race == "Black" | race == "White") %>%
+  group_by(race, gender, policePrecinct) %>%
+  summarize(n = n()) %>%
+  ggplot(aes(x = race, fill = factor(gender), y = n)) +
+  geom_col() +
+  facet_wrap(~ policePrecinct)
+
+```
+
+Let's address another question - which are the top 5 neighborhoods with the most number of incidents?  
+
+```{r}
+police_data %>%
+  group_by(neighborhood) %>%
+  summarize(n = n()) %>%
+  top_n(n = 5, wt = n) %>%
+  arrange(desc(n))
+```
+
+Summarize is really powerful, and you can do it multiple times (depending on your grouping structure) and use functions like:  
+1. mean() and median()  
+2. sd()  
+3. quantile(), min(), max()  
+4. first(), last()  
+5. n_distinc()  
+
+
