@@ -177,7 +177,7 @@ Lots of options for continuous data, think about the functions:
 4. cummean() 
 5. na_if()
 
-## Challenge  
+### Group Challenge  
 
 Replace the race column in the dataset with a column of the same name except that the value "Unknown" is replaced with NA. 
 
@@ -185,7 +185,7 @@ Replace the race column in the dataset with a column of the same name except tha
 police_data %>%
   mutate(race = na_if(race, "Unknown"))
 ```
-## Group Operatinons and Summaries  
+## Group Operations and Summaries  
 
 One of the most powerful features of dplyr is the ability to do stuff on groups or chunks of your data. Sometimes you'll want to leave the dataset intact, and other times you'll want to summarize the data after you do these groupings. Let's look at some examples of both.  
 
@@ -240,6 +240,47 @@ Summarize is really powerful, and you can do it multiple times (depending on you
 2. sd()  
 3. quantile(), min(), max()  
 4. first(), last()  
-5. n_distinc()  
+5. n_distinct()  
+
+### Group challenge  
+For this next challenge, develop code that shows the number of stops for each police precinct for white men and women (sort by precinct).  
+
+Bonus challenge - which precinct has the most equal number of arrests between men and women? What is the percentage?
 
 
+```{r}
+#Part 1
+police_data %>%
+  filter(race == "White") %>%
+  filter(gender == "Male" | gender == "Female") %>%
+  group_by(policePrecinct, gender) %>%
+  summarize(n = n()) %>%
+  arrange((policePrecinct))
+
+#Part 2
+police_data %>%
+  filter(race == "White") %>%
+  filter(gender == "Male" | gender == "Female") %>%
+  group_by(policePrecinct, gender) %>%
+  summarize(n = n()) %>%
+  arrange((policePrecinct)) %>%
+  ungroup() %>%
+  group_by(policePrecinct) %>%
+  mutate(percent_of_total = n/sum(n)) %>%
+  mutate(percent_diff = max(percent_of_total)-min(percent_of_total))
+```
+
+## Joins 
+
+A lot of dplyr syntax comes from SQL - a language designed to interact with databases, which are often just tables that are linked to each other through **key** columns. Imagine a scneario where you have a set of information about users - one table describes how much they've been on a certain website (number of hours total, number of days logged in, etc.), and another describes some of their personal attributes (gender, date of birth, login, username, etc.). You can imagine wanting to join the information from these two tables together to do certain analyses. Being able to join together different tables of data is a frequent occurence, and really, really easy with dplyr syntax.  You may be asking yourself why it isn't easier just to have everything in one giant table.... giant tables are slow and bulky. A linked database with many smaller tables is more agile. Most folks don't want all the information all the time! Forwhat it's worth - dplyr can also play nice with databases.... but that's for another lesson. :)  
+
+For these examples and exercises, I've split the data into three different tables that are each unified by a different theme: incident information, demographic data and geographic data. This is supposed to mimic something you might see in a real database (or get from one of your colleagues).  Let's load and look at them.  
+
+```{r}
+incident_info = read_csv("./data/police_incident_info.csv", guess_max = 29000)
+geography = read_csv("./data/police_geography.csv")
+demographics = read_csv("./data/police_demographics.csv")
+
+#glimpse(incident_info)
+#Others too...
+```

@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="Keaton Wilson" />
@@ -361,18 +362,6 @@ summary {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
 
@@ -666,8 +655,8 @@ police_data %&gt;%
 ## #   vehicleSearch &lt;chr&gt;, preRace &lt;chr&gt;, race &lt;chr&gt;, gender &lt;chr&gt;,
 ## #   lat &lt;dbl&gt;, long &lt;dbl&gt;, policePrecinct &lt;dbl&gt;, neighborhood &lt;chr&gt;</code></pre>
 </div>
-<div id="group-operatinons-and-summaries" class="section level2">
-<h2>Group Operatinons and Summaries</h2>
+<div id="group-operations-and-summaries" class="section level2">
+<h2>Group Operations and Summaries</h2>
 <p>One of the most powerful features of dplyr is the ability to do stuff on groups or chunks of your data. Sometimes you’ll want to leave the dataset intact, and other times you’ll want to summarize the data after you do these groupings. Let’s look at some examples of both.</p>
 <p>First, let’s look at some relatively complicated manipulations that leave all the data in place… we’re going to calculate the average hour at which stops happen for each month, and then filter the data frame for only incidents that happen after that average.</p>
 <pre class="r"><code>police_data %&gt;%
@@ -753,7 +742,11 @@ police_data %&gt;%
 2. sd()<br />
 3. quantile(), min(), max()<br />
 4. first(), last()<br />
-5. n_distinc()</p>
+5. n_distinct()</p>
+</div>
+<div id="group-challenge" class="section level2">
+<h2>Group challenge</h2>
+<p>For this next challenge, develop</p>
 </div>
 </div>
 
@@ -774,6 +767,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
