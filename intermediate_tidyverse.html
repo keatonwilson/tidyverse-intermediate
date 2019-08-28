@@ -632,9 +632,8 @@ police_data %&gt;%
 ## #   time_of_day &lt;chr&gt;</code></pre>
 <p>Lots of options for continuous data, think about the functions:<br />
 1. +, -, log() 2. lead(), lag() 3. percent_rank(), ntile() 4. cummean() 5. na_if()</p>
-</div>
-<div id="challenge-1" class="section level2">
-<h2>Challenge</h2>
+<div id="group-challenge" class="section level3">
+<h3>Group Challenge</h3>
 <p>Replace the race column in the dataset with a column of the same name except that the value “Unknown” is replaced with NA.</p>
 <pre class="r"><code>police_data %&gt;%
   mutate(race = na_if(race, &quot;Unknown&quot;))</code></pre>
@@ -654,6 +653,7 @@ police_data %&gt;%
 ## # … with 51,910 more rows, and 9 more variables: personSearch &lt;chr&gt;,
 ## #   vehicleSearch &lt;chr&gt;, preRace &lt;chr&gt;, race &lt;chr&gt;, gender &lt;chr&gt;,
 ## #   lat &lt;dbl&gt;, long &lt;dbl&gt;, policePrecinct &lt;dbl&gt;, neighborhood &lt;chr&gt;</code></pre>
+</div>
 </div>
 <div id="group-operations-and-summaries" class="section level2">
 <h2>Group Operations and Summaries</h2>
@@ -743,10 +743,190 @@ police_data %&gt;%
 3. quantile(), min(), max()<br />
 4. first(), last()<br />
 5. n_distinct()</p>
+<div id="group-challenge-1" class="section level3">
+<h3>Group challenge</h3>
+<p>For this next challenge, develop code that shows the number of stops for each police precinct for white men and women (sort by precinct).</p>
+<p>Bonus challenge - which precinct has the most equal number of arrests between men and women? What is the percentage?</p>
+<pre class="r"><code>#Part 1
+police_data %&gt;%
+  filter(race == &quot;White&quot;) %&gt;%
+  filter(gender == &quot;Male&quot; | gender == &quot;Female&quot;) %&gt;%
+  group_by(policePrecinct, gender) %&gt;%
+  summarize(n = n()) %&gt;%
+  arrange((policePrecinct))</code></pre>
+<pre><code>## # A tibble: 10 x 3
+## # Groups:   policePrecinct [5]
+##    policePrecinct gender     n
+##             &lt;dbl&gt; &lt;chr&gt;  &lt;int&gt;
+##  1              1 Female   404
+##  2              1 Male     962
+##  3              2 Female  1083
+##  4              2 Male    2212
+##  5              3 Female   443
+##  6              3 Male     863
+##  7              4 Female   400
+##  8              4 Male     790
+##  9              5 Female  1706
+## 10              5 Male    2808</code></pre>
+<pre class="r"><code>#Part 2
+police_data %&gt;%
+  filter(race == &quot;White&quot;) %&gt;%
+  filter(gender == &quot;Male&quot; | gender == &quot;Female&quot;) %&gt;%
+  group_by(policePrecinct, gender) %&gt;%
+  summarize(n = n()) %&gt;%
+  arrange((policePrecinct)) %&gt;%
+  ungroup() %&gt;%
+  group_by(policePrecinct) %&gt;%
+  mutate(percent_of_total = n/sum(n)) %&gt;%
+  mutate(percent_diff = max(percent_of_total)-min(percent_of_total))</code></pre>
+<pre><code>## # A tibble: 10 x 5
+## # Groups:   policePrecinct [5]
+##    policePrecinct gender     n percent_of_total percent_diff
+##             &lt;dbl&gt; &lt;chr&gt;  &lt;int&gt;            &lt;dbl&gt;        &lt;dbl&gt;
+##  1              1 Female   404            0.296        0.408
+##  2              1 Male     962            0.704        0.408
+##  3              2 Female  1083            0.329        0.343
+##  4              2 Male    2212            0.671        0.343
+##  5              3 Female   443            0.339        0.322
+##  6              3 Male     863            0.661        0.322
+##  7              4 Female   400            0.336        0.328
+##  8              4 Male     790            0.664        0.328
+##  9              5 Female  1706            0.378        0.244
+## 10              5 Male    2808            0.622        0.244</code></pre>
 </div>
-<div id="group-challenge" class="section level2">
-<h2>Group challenge</h2>
-<p>For this next challenge, develop</p>
+</div>
+<div id="joins" class="section level2">
+<h2>Joins</h2>
+<p>A lot of dplyr syntax comes from SQL - a language designed to interact with databases, which are often just tables that are linked to each other through <strong>key</strong> columns. Imagine a scneario where you have a set of information about users - one table describes how much they’ve been on a certain website (number of hours total, number of days logged in, etc.), and another describes some of their personal attributes (gender, date of birth, login, username, etc.). You can imagine wanting to join the information from these two tables together to do certain analyses. Being able to join together different tables of data is a frequent occurence, and really, really easy with dplyr syntax. You may be asking yourself why it isn’t easier just to have everything in one giant table…. giant tables are slow and bulky. A linked database with many smaller tables is more agile. Most folks don’t want all the information all the time! Forwhat it’s worth - dplyr can also play nice with databases…. but that’s for another lesson. :)</p>
+<p>For these examples and exercises, I’ve split the data into three different tables that are each unified by a different theme: incident information, demographic data and geographic data. This is supposed to mimic something you might see in a real database (or get from one of your colleagues). Let’s load and look at them.</p>
+<pre class="r"><code>incident_info = read_csv(&quot;./data/police_incident_info.csv&quot;, guess_max = 29000)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   idNum = col_character(),
+##   date = col_datetime(format = &quot;&quot;),
+##   problem = col_character(),
+##   citationIssued = col_character(),
+##   personSearch = col_character(),
+##   vehicleSearch = col_character()
+## )</code></pre>
+<pre class="r"><code>geography = read_csv(&quot;./data/police_geography.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   idNum = col_character(),
+##   lat = col_double(),
+##   long = col_double(),
+##   policePrecinct = col_double(),
+##   neighborhood = col_character()
+## )</code></pre>
+<pre class="r"><code>demographics = read_csv(&quot;./data/police_demographics.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   idNum = col_character(),
+##   preRace = col_character(),
+##   race = col_character(),
+##   gender = col_character()
+## )</code></pre>
+<pre class="r"><code>summary_data = read_csv(&quot;./data/police_data_summary.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   policePrecinct = col_double(),
+##   neighborhood = col_character(),
+##   n_incidents = col_double()
+## )</code></pre>
+<pre class="r"><code>#glimpse(incident_info)
+#Others too...</code></pre>
+<p>There are couple main types of joins, depending on which combinations of tables you want:<br />
+<strong>Mutating Joins</strong></p>
+<ol style="list-style-type: decimal">
+<li>Inner join - only takes the matching things from each table (if multiple rows match, returns one row)</li>
+<li>Left or Right Join - one-sided - keeps stuff from one side<br />
+</li>
+<li>Full Join (keep everything!)</li>
+</ol>
+<p><strong>Filtering Joins</strong></p>
+<ol start="4" style="list-style-type: decimal">
+<li>Anti-join - differences between two tables<br />
+</li>
+<li>Semi-join - keeps all observations in x that have a match in y (returns only rows from the left table)</li>
+</ol>
+<pre class="r"><code>#Let's do this with pipe syntax - simple join where we're keeping everything that is common between the two dataframes
+new = incident_info %&gt;%
+  inner_join(geography, by = &quot;idNum&quot;)
+
+glimpse(new)</code></pre>
+<pre><code>## Observations: 51,920
+## Variables: 10
+## $ idNum          &lt;chr&gt; &quot;17-000003&quot;, &quot;17-000007&quot;, &quot;17-000073&quot;, &quot;17-000092…
+## $ date           &lt;dttm&gt; 2017-01-01 00:00:42, 2017-01-01 00:03:07, 2017-0…
+## $ problem        &lt;chr&gt; &quot;suspicious&quot;, &quot;suspicious&quot;, &quot;traffic&quot;, &quot;suspiciou…
+## $ citationIssued &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N…
+## $ personSearch   &lt;chr&gt; &quot;NO&quot;, &quot;NO&quot;, &quot;NO&quot;, &quot;NO&quot;, &quot;NO&quot;, &quot;NO&quot;, &quot;NO&quot;, &quot;NO&quot;, &quot;…
+## $ vehicleSearch  &lt;chr&gt; &quot;NO&quot;, &quot;NO&quot;, &quot;NO&quot;, &quot;NO&quot;, &quot;NO&quot;, &quot;NO&quot;, &quot;NO&quot;, &quot;NO&quot;, &quot;…
+## $ lat            &lt;dbl&gt; 44.96662, 44.98045, 44.94835, 44.94836, 44.97908,…
+## $ long           &lt;dbl&gt; -93.24646, -93.27134, -93.27538, -93.28135, -93.2…
+## $ policePrecinct &lt;dbl&gt; 1, 1, 5, 5, 1, 1, 1, 2, 2, 4, 5, 1, 2, 1, 1, 1, 4…
+## $ neighborhood   &lt;chr&gt; &quot;Cedar Riverside&quot;, &quot;Downtown West&quot;, &quot;Whittier&quot;, &quot;…</code></pre>
+<pre class="r"><code>#What happens when we want to join a smaller set of data (some summary data) onto a larger dataframe?
+summary =  new %&gt;%
+  inner_join(summary_data, by = c(&quot;neighborhood&quot;, &quot;policePrecinct&quot;))</code></pre>
+<p>Fair warning - joins can get a lot more complicated than this when you have data that is represented in one table and not another, and it’s easy to get confused and lose data. This is just a primer! Check out the great book <a href="https://r4ds.had.co.nz">R for Data Science</a> for more on joins!</p>
+</div>
+<div id="group-challenge-2" class="section level2">
+<h2>Group Challenge</h2>
+<p>Create a two dataframes using joins. First, one that only contains records for stops during the top 3 busiest hours of stops for each neighborhood. Second, one that contains only records for outside of the 3 busiest hours of stops for each neighborhood.</p>
+<p><strong>Hint:</strong> look up the <code>hour()</code> function from lubridate, and think about how to use <code>semi_join()</code> and <code>anti_join()</code>.</p>
+<pre class="r"><code>top_hours = police_data %&gt;%
+  mutate(hour = hour(date)) %&gt;%
+  group_by(neighborhood, hour) %&gt;%
+  summarize(n = n()) %&gt;%
+  ungroup() %&gt;%
+  group_by(neighborhood) %&gt;%
+  top_n(n = 3, wt = n)
+
+#Crimes in top 3 hours by neighborhood
+police_data %&gt;%
+  mutate(hour = hour(date)) %&gt;%
+  semi_join(top_hours)</code></pre>
+<pre><code>## Joining, by = c(&quot;neighborhood&quot;, &quot;hour&quot;)</code></pre>
+<pre><code>## # A tibble: 14,006 x 16
+##       X1 idNum date                problem MDC   citationIssued
+##    &lt;dbl&gt; &lt;chr&gt; &lt;dttm&gt;              &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;         
+##  1  6824 17-0… 2017-01-01 00:03:07 suspic… MDC   &lt;NA&gt;          
+##  2  6827 17-0… 2017-01-01 00:37:58 traffic MDC   &lt;NA&gt;          
+##  3  6828 17-0… 2017-01-01 00:46:48 traffic MDC   &lt;NA&gt;          
+##  4  6829 17-0… 2017-01-01 00:48:46 suspic… MDC   &lt;NA&gt;          
+##  5  6830 17-0… 2017-01-01 00:50:55 traffic MDC   &lt;NA&gt;          
+##  6  6831 17-0… 2017-01-01 00:57:10 traffic MDC   &lt;NA&gt;          
+##  7  6835 17-0… 2017-01-01 01:19:59 traffic MDC   &lt;NA&gt;          
+##  8  6836 17-0… 2017-01-01 01:22:01 traffic MDC   &lt;NA&gt;          
+##  9  6837 17-0… 2017-01-01 01:41:24 suspic… MDC   &lt;NA&gt;          
+## 10  6838 17-0… 2017-01-01 01:45:09 suspic… MDC   &lt;NA&gt;          
+## # … with 13,996 more rows, and 10 more variables: personSearch &lt;chr&gt;,
+## #   vehicleSearch &lt;chr&gt;, preRace &lt;chr&gt;, race &lt;chr&gt;, gender &lt;chr&gt;,
+## #   lat &lt;dbl&gt;, long &lt;dbl&gt;, policePrecinct &lt;dbl&gt;, neighborhood &lt;chr&gt;,
+## #   hour &lt;int&gt;</code></pre>
+<pre class="r"><code>#crimes NOT in top 3 hours by neighborhood
+police_data %&gt;% 
+  mutate(hour = hour(date)) %&gt;%
+  anti_join(top_hours)</code></pre>
+<pre><code>## Joining, by = c(&quot;neighborhood&quot;, &quot;hour&quot;)</code></pre>
+<pre><code>## # A tibble: 37,914 x 16
+##       X1 idNum date                problem MDC   citationIssued
+##    &lt;dbl&gt; &lt;chr&gt; &lt;dttm&gt;              &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;         
+##  1  6823 17-0… 2017-01-01 00:00:42 suspic… MDC   &lt;NA&gt;          
+##  2  6825 17-0… 2017-01-01 00:23:15 traffic MDC   &lt;NA&gt;          
+##  3  6826 17-0… 2017-01-01 00:33:48 suspic… MDC   &lt;NA&gt;          
+##  4  6832 17-0… 2017-01-01 01:05:50 traffic MDC   &lt;NA&gt;          
+##  5  6833 17-0… 2017-01-01 01:09:13 suspic… MDC   &lt;NA&gt;          
+##  6  6834 17-0… 2017-01-01 01:15:01 traffic other &lt;NA&gt;          
+##  7  6839 17-0… 2017-01-01 01:51:02 suspic… MDC   &lt;NA&gt;          
+##  8  6841 17-0… 2017-01-01 01:53:42 traffic MDC   &lt;NA&gt;          
+##  9  6842 17-0… 2017-01-01 02:04:13 suspic… MDC   &lt;NA&gt;          
+## 10  6843 17-0… 2017-01-01 02:09:42 traffic MDC   &lt;NA&gt;          
+## # … with 37,904 more rows, and 10 more variables: personSearch &lt;chr&gt;,
+## #   vehicleSearch &lt;chr&gt;, preRace &lt;chr&gt;, race &lt;chr&gt;, gender &lt;chr&gt;,
+## #   lat &lt;dbl&gt;, long &lt;dbl&gt;, policePrecinct &lt;dbl&gt;, neighborhood &lt;chr&gt;,
+## #   hour &lt;int&gt;</code></pre>
 </div>
 </div>
 

@@ -280,7 +280,108 @@ For these examples and exercises, I've split the data into three different table
 incident_info = read_csv("./data/police_incident_info.csv", guess_max = 29000)
 geography = read_csv("./data/police_geography.csv")
 demographics = read_csv("./data/police_demographics.csv")
+summary_data = read_csv("./data/police_data_summary.csv")
+
 
 #glimpse(incident_info)
 #Others too...
+
+```
+
+There are couple main types of joins, depending on which combinations of tables you want:  
+**Mutating Joins**  
+
+1. Inner join - only takes the matching things from each table (if multiple rows match, returns one row)
+2. Left or Right Join - one-sided - keeps stuff from one side  
+3. Full Join (keep everything!)  
+
+**Filtering Joins**  
+
+4. Anti-join  - differences between two tables  
+5. Semi-join - keeps all observations in x that have a match in y (returns only rows from the left table)  
+
+
+```{r}
+#Let's do this with pipe syntax - simple join where we're keeping everything that is common between the two dataframes
+new = incident_info %>%
+  inner_join(geography, by = "idNum")
+
+glimpse(new)
+
+#What happens when we want to join a smaller set of data (some summary data) onto a larger dataframe?
+summary =  new %>%
+  inner_join(summary_data, by = c("neighborhood", "policePrecinct"))
+
+```
+
+Fair warning - joins can get a lot more complicated than this when you have data that is represented in one table and not another, and it's easy to get confused and lose data. This is just a primer! Check out the great book [R for Data Science](https://r4ds.had.co.nz) for more on joins!  
+
+### Group Challenge  
+
+Create a two dataframes using joins. First, one that only contains records for stops during the top 3 busiest hours of stops for each neighborhood. Second, one that contains only records for outside of the 3 busiest hours of stops for each neighborhood.  
+
+**Hint:** look up the `hour()` function from lubridate, and think about how to use `semi_join()` and `anti_join()`. 
+
+```{r}
+top_hours = police_data %>%
+  mutate(hour = hour(date)) %>%
+  group_by(neighborhood, hour) %>%
+  summarize(n = n()) %>%
+  ungroup() %>%
+  group_by(neighborhood) %>%
+  top_n(n = 3, wt = n)
+
+#Crimes in top 3 hours by neighborhood
+police_data %>%
+  mutate(hour = hour(date)) %>%
+  semi_join(top_hours)
+
+#crimes NOT in top 3 hours by neighborhood
+police_data %>% 
+  mutate(hour = hour(date)) %>%
+  anti_join(top_hours)
+
+```
+
+## Piping into ggplot (and some fun plotting things)  
+
+The other great thing about dplyr and tidyverse as a whole is that you can pipe modified dataframes directly into ggplot2, and you can also do piped dplyr operations **within** ggplot2.  
+
+For example, let's say that we wanted to do some mapping (we have lat lon info for all the stops, so this makes sense!).  
+
+```{r}
+library(ggmap)
+register_google(key = "AIzaSyDyAqUc4o9p_DOBSF_JOXH5c_JXPqoU4Yw")
+loc = c(police_data$lat[1], police_data$long[1])
+our_map = get_map(location = "Minneapolis", zoom = 12)
+
+#Tooooo much data
+ggmap(our_map) +
+  geom_point(data = police_data, aes(x = long, y = lat, color = race), 
+             size = 1, alpha = 0.5)
+
+#Let's do filtering within ggplot
+ggmap(our_map) +
+  stat_density_2d(data = police_data %>%
+                      filter(race == "Black" | race == "White" | race == "East African"), 
+             aes(x = long, y = lat, color = NULL, fill = race), 
+             geom = "polygon", 
+             alpha = 0.5) +
+  facet_wrap(~ race)
+
+#Could also add centroids
+ggmap(our_map) +
+  stat_density_2d(data = police_data %>%
+                      filter(race == "Black" | race == "White" | race == "East African"), 
+             aes(x = long, y = lat, color = NULL, fill = race), 
+             geom = "polygon", 
+             alpha = 0.1) +
+  geom_point(data = police_data %>%
+                      filter(race == "Black" | race == "White" | race == "East African") %>%
+                      group_by(race) %>%
+                      summarize(avg_lat = mean(lat), 
+                                avg_lon = mean(long)), 
+             aes(x = avg_lon, y = avg_lat, color = race)) +
+  facet_wrap(~ race)
+
 ```
