@@ -384,4 +384,48 @@ ggmap(our_map) +
              aes(x = avg_lon, y = avg_lat, color = race)) +
   facet_wrap(~ race)
 
+#And we can also pipe directly into ggplot (though we can't do this for ggmap)
+
+police_data %>%
+  mutate(day = day(date)) %>%
+  group_by(policePrecinct, day) %>%
+  summarize(n = n()) %>%
+  ggplot(aes(x = factor(policePrecinct), y = n)) +
+    geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+    geom_jitter(width = 0.1, alpha = 0.5) +
+    # geom_dotplot(binaxis = "y", stackdir = 'center', dotsize = 0.5) +
+  theme_classic() +
+  xlab("Police Precinct") +
+  ylab("Number of stops per day")
+    
+
+```
+
+
+### Final group challenge  
+
+Put it all together now! Determine which three precincts had the worst racial mis-match (when preRace didn't line up with actual race). Plot a map of all the stops that involved racial mis-matches for the worst precinct, colored by the actual race of the individual stopped. 
+
+```{r}
+police_data %>%
+  filter(preRace != "Unknown" & race != "Unknown") %>%
+  mutate(mismatch = ifelse(preRace == race, FALSE, TRUE)) %>%
+  group_by(policePrecinct) %>%
+  count(mismatch) %>%
+  mutate(perc = n/sum(n)) %>%
+  filter(mismatch == TRUE) %>%
+  arrange(desc(perc))
+
+to_map = police_data %>%
+  filter(policePrecinct %in% c(5)) %>%
+  mutate(mismatch = ifelse(preRace == race, FALSE, TRUE)) %>%
+  filter(mismatch == TRUE)
+
+
+mismatch_map = get_map(location = "Minneapolis", zoom = 11)
+
+ggmap(mismatch_map) +
+  geom_point(data = to_map, aes(x = long, y = lat, color = race), alpha = 0.5, size = 1) +
+  facet_wrap(~ race)
+
 ```
