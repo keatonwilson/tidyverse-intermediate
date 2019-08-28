@@ -17,17 +17,18 @@ stops in Minneapolis in 2017) to work through a bunch of the Tidyverse's more
 advanced functions. The workshop is catered to users who have some familiarity 
 with the Tidyverse's main principles (tidy data, the pipe, ggplot2) but want to 
 take their knowledge a step further to do more complex data manipulation, 
-summaries and graphing. It's basically an overview of tools that I end up 
+summaries and graphing. It's basically an overview of tools that data scientists end up 
 using frequently.  
 
-In this workshop we'll cover:  
-1. Data overview  
-2. Filtering data  
-3. Mutations (not the biological kind)  
-4. Group operations  
-5. Summaries  
-6. Joins  
-7. Pushing into ggplot  
+## Learning Objectives  
+Learners in this workshop will work to:  
+1. Quickly summarize and gain knowledge about the overview of a new data set  
+2. Filter their data by columns and by certain conditions  
+3. Learn how to transform and add new columns to existing data sets  
+4. Understand powerful grouping techniques to apply transformations and summaries  
+5. Summarize their data multiple times to gain critical insights  
+6. Join relational data together  
+7. Generate plots by piping data directly into ggplot2  
 
 Generally, the format will be for me to live code and for all of you to follow 
 along and work on your individual scripts, but there will be a few times during
