@@ -106,8 +106,7 @@ Let's do some filtering.
 
 Often, you may want to subsections of a dataframe for graphing, analysis or 
 summarization. For instance, it might be useful to only have a subset of the 
-data where be useful to have a portion of the data where citations were issued. This
-is easy using the `filter()` function.  
+data where citations were issued. This is easy using the `filter()` function.  
 
 ```{r}
 police_data %>%
@@ -139,8 +138,7 @@ You can also filter by group_by (which we'll get to in a sec). Some useful funct
 
 ### Challenge  
 
-Using the police data above work with your group/partner to create a subset of the larger data 
-set of traffic violation stops on black men between 1 and 4 am where a citation was issued. 
+Using the police data above work with your group/partner to create a subset of the larger data set of traffic violation stops on black men between 1 and 4 am where a citation was issued. 
 Include the date, problem, citationIssued, race, gender, lat and long columns.  
 
 The time problem is tricky if you're not familiar with lubridate (and even if you are) - check out the cheat sheet and google!
@@ -154,7 +152,7 @@ police_data %>%
 
 ## Mutations  
 
-Mutations are really just mildly-confusing term to describe creating columsn from row-by-row calcuations (either making new columns or replacing old columns with new ones). This is maybe my most-used function from the tidyverse - lots of utility!  
+Mutations are really just mildly-confusing term to describe creating columns from row-by-row calcuations (either making new columns or replacing old columns with new ones). This is maybe my most-used function from the tidyverse - lots of utility!  
 
 I'd say it's generally more applicable with continuous data, of which this data set is lacking, but there is still utility here. Let's say you wanted to add a column that indicates whether or not the cop for a given record was successful at determining the race of the person being stopped. We can add a new column to the data easily!  
 
