@@ -4,6 +4,7 @@ author: "Keaton Wilson"
 date: "8/7/2019"
 output:
   pdf_document: default
+  word_document: default
   html_document:
     theme: cosmo
 ---
@@ -279,10 +280,10 @@ A lot of dplyr syntax comes from SQL - a language designed to interact with data
 For these examples and exercises, I've split the data into three different tables that are each unified by a different theme: incident information, demographic data and geographic data. This is supposed to mimic something you might see in a real database (or get from one of your colleagues).  Let's load and look at them.  
 
 ```{r}
-incident_info = read_csv("./data/police_incident_info.csv", guess_max = 29000)
-geography = read_csv("./data/police_geography.csv")
-demographics = read_csv("./data/police_demographics.csv")
-summary_data = read_csv("./data/police_data_summary.csv")
+incident_info = read_csv("https://tinyurl.com/y677ub35", guess_max = 29000)
+geography = read_csv("https://tinyurl.com/y4fyfbcb")
+demographics = read_csv("https://tinyurl.com/yy7834sz")
+summary_data = read_csv("https://tinyurl.com/y6duxsvp", guess_max = 29000)
 
 
 #glimpse(incident_info)
