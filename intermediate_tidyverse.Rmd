@@ -2,8 +2,9 @@
 title: "Intermediate Tidyverse"
 author: "Keaton Wilson"
 date: "8/7/2019"
-output: 
-  html_document: 
+output:
+  pdf_document: default
+  html_document:
     theme: cosmo
 ---
 
@@ -45,7 +46,7 @@ Minneapolis police department in 2017. Let's get it.
 #Reading in from my github repo
 library(tidyverse)
 
-police_data = read_csv("https://raw.githubusercontent.com/keatonwilson/tidyverse-intermediate/master/data/MplsStops.csv")
+police_data = read_csv("https://tinyurl.com/y55y2hjk")
 
 #Get some parsing failures, but we can scope that out in a sec
 
@@ -58,7 +59,7 @@ problems(police_data)
 
 #Looks like the culprit is the citation issued column - let's just reimport with 
 #an increased guess amount to include this
-address = "https://raw.githubusercontent.com/keatonwilson/tidyverse-intermediate/master/data/MplsStops.csv"
+address = "https://tinyurl.com/y55y2hjk"
 police_data = read_csv(address, guess_max = 29000)
 
 glimpse(police_data)
